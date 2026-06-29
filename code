@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="專案追蹤">
+<title>專案追蹤</title>
+<style>
+  :root {
+    --bg: #f5f5f0;
+    --surface: #ffffff;
+    --border: #e0ddd6;
+    --border-strong: #c8c4bb;
+    --text: #1a1a18;
+    --text-secondary: #6b6860;
+    --text-muted: #9e9b94;
+    --accent: #2563eb;
+    --accent-bg: #eff6ff;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141412;
+      --surface: #1e1e1b;
+      --border: #2e2e28;
+      --border-strong: #3e3e38;
+      --text: #f0ede8;
+      --text-secondary: #9e9b94;
+      --text-muted: #6b6860;
+      --accent: #3b82f6;
+      --accent-bg: #1e3a5f;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* Header */
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 20px 12px; position: sticky; top: 0; z-index: 100; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  header h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; }
+  .count-badge { font-size: 13px; color: var(--text-muted); font-weight: 400; }
+  .search-bar { position: relative; }
+  .search-bar input { width: 100%; height: 36px; padding: 0 12px 0 36px; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; font-size: 14px; color: var(--text); outline: none; }
+  .search-bar input::placeholder { color: var(--text-muted); }
+  .search-bar input:focus { border-color: var(--accent); }
+  .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 15px; pointer-events: none; }
+
+  /* Filter tabs */
+  .filter-bar { display: flex; gap: 6px; padding: 12px 20px; overflow-x: auto; scrollbar-width: none; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-btn { flex-shrink: 0; padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; font-size: 13px; color: var(--text-secondary); cursor: pointer; white-space: nowrap; font-weight: 500; transition: all 0.15s; }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* List */
+  .list { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+
+  /* Card */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); cursor: pointer; transition: box-shadow 0.15s; active: scale(0.98); }
+  .card:active { box-shadow: none; opacity: 0.85; }
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .card-id { font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: 0.3px; }
+  .card-name { font-size: 15px; font-weight: 500; margin-top: 2px; line-height: 1.4; }
+  .card-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+  .card-note { font-size: 13px; color: var(--text-muted); margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Status badge */
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+  .st-未開始 { background: #f1f1ef; color: #5f5e5a; } .st-未開始::before { background: #9e9b94; }
+  .st-已請購 { background: #eff6ff; color: #1e4faa; } .st-已請購::before { background: #3b82f6; }
+  .st-已進貨 { background: #fef9ec; color: #854f0b; } .st-已進貨::before { background: #ef9f27; }
+  .st-已完成 { background: #eaf3de; color: #27500a; } .st-已完成::before { background: #63992 2; }
+  .st-已完成::before { background: #639922; }
+  .st-取消 { background: #fcebeb; color: #791f1f; } .st-取消::before { background: #e24b4a; }
+
+  .ship-badge { background: var(--bg); border: 1px solid var(--border); color: var(--text-secondary); padding: 3px 9px; border-radius: 20px; font-size: 12px; }
+  .date-label { font-size: 12px; color: var(--text-muted); }
+
+  /* Empty */
+  .empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
+  .empty p { font-size: 15px; }
+
+  /* FAB */
+  .fab { position: fixed; bottom: 28px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 26px; cursor: pointer; box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: center; z-index: 200; transition: transform 0.15s; }
+  .fab:active { transform: scale(0.92); }
+
+  /* Modal overlay */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300; align-items: flex-end; }
+  .overlay.open { display: flex; }
+
+  /* Sheet */
+  .sheet { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-height: 92vh; overflow-y: auto; padding: 0 0 env(safe-area-inset-bottom, 20px); animation: slideUp 0.25s ease; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .sheet-handle { width: 36px; height: 4px; background: var(--border-strong); border-radius: 2px; margin: 12px auto 4px; }
+  .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 16px; border-bottom: 1px solid var(--border); }
+  .sheet-title { font-size: 17px; font-weight: 600; }
+  .sheet-close { background: var(--bg); border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 18px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .sheet-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+  /* Form fields */
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+  .field input, .field select, .field textarea {
+    height: 44px; padding: 0 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--bg); color: var(--text); font-size: 15px; outline: none; font-family: inherit; width: 100%;
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); background: var(--surface); }
+  .field textarea { height: 80px; padding: 10px 14px; resize: none; line-height: 1.5; }
+
+  /* Actions */
+  .sheet-actions { display: flex; gap: 10px; padding: 0 20px 16px; }
+  .btn-save { flex: 1; height: 48px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-size: 16px; font-weight: 600; cursor: pointer; }
+  .btn-save:active { opacity: 0.85; }
+  .btn-del { height: 48px; width: 48px; background: #fcebeb; color: #a32d2d; border: none; border-radius: var(--radius); font-size: 20px; cursor: pointer; flex-shrink: 0; }
+  .btn-del:active { opacity: 0.75; }
+
+  /* Stats bar */
+  .stats { display: flex; gap: 8px; padding: 10px 16px 2px; overflow-x: auto; scrollbar-width: none; }
+  .stats::-webkit-scrollbar { display: none; }
+  .stat-chip { flex-shrink: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+  .stat-chip strong { color: var(--text); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <h1>專案追蹤</h1>
+    </div>
+    <span class="count-badge" id="totalCount"></span>
+  </div>
+  <div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="搜尋代號、名稱…" oninput="renderList()">
+  </div>
+</header>
+
+<div class="filter-bar" id="filterBar">
+  <button class="filter-btn active" onclick="setFilter('')" data-filter="">全部</button>
+  <button class="filter-btn" onclick="setFilter('未開始')" data-filter="未開始">未開始</button>
+  <button class="filter-btn" onclick="setFilter('已請購')" data-filter="已請購">已請購</button>
+  <button class="filter-btn" onclick="setFilter('已進貨')" data-filter="已進貨">已進貨</button>
+  <button class="filter-btn" onclick="setFilter('已完成')" data-filter="已完成">已完成</button>
+  <button class="filter-btn" onclick="setFilter('取消')" data-filter="取消">取消</button>
+</div>
+
+<div class="stats" id="statsBar"></div>
+<div class="list" id="list"></div>
+
+<button class="fab" onclick="openSheet(null)" aria-label="新增專案">＋</button>
+
+<!-- Sheet -->
+<div class="overlay" id="overlay" onclick="closeOnBg(event)">
+  <div class="sheet" id="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <span class="sheet-title" id="sheetTitle">新增專案</span>
+      <button class="sheet-close" onclick="closeSheet()">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="field"><label>專案代號</label><input id="fId" placeholder="例：PRJ-001" /></div>
+      <div class="field"><label>名稱</label><input id="fName" placeholder="專案名稱" /></div>
+      <div class="field"><label>訂單日期</label><input id="fDate" type="date" /></div>
+      <div class="field">
+        <label>狀態</label>
+        <select id="fStatus">
+          <option>未開始</option>
+          <option>已請購</option>
+          <option>已進貨</option>
+          <option>已完成</option>
+          <option>取消</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>運輸方式</label>
+        <select id="fShip">
+          <option value="">— 未選擇 —</option>
+          <option>空運</option>
+          <option>海運</option>
+          <option>其他</option>
+        </select>
+      </div>
+      <div class="field"><label>備註</label><textarea id="fNote" placeholder="輸入備註…"></textarea></div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-save" onclick="save()">儲存</button>
+      <button class="btn-del" id="delBtn" onclick="del()" style="display:none" aria-label="刪除">🗑</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let projects = JSON.parse(localStorage.getItem('projects') || '[]');
+let editId = null;
+let activeFilter = '';
+
+if (projects.length === 0) {
+  projects = [
+    { id: crypto.randomUUID(), code: 'PRJ-001', name: '範例專案 A', date: '2026-06-01', status: '已進貨', ship: '空運', note: '這是範例資料' },
+    { id: crypto.randomUUID(), code: 'PRJ-002', name: '範例專案 B', date: '2026-06-15', status: '未開始', ship: '海運', note: '' },
+  ];
+  persist();
+}
+
+function persist() { localStorage.setItem('projects', JSON.stringify(projects)); }
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === f));
+  renderList();
+}
+
+function renderList() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const list = projects.filter(p => {
+    const matchQ = !q || (p.code + p.name + p.note).toLowerCase().includes(q);
+    const matchF = !activeFilter || p.status === activeFilter;
+    return matchQ && matchF;
+  });
+
+  document.getElementById('totalCount').textContent = projects.length + ' 個專案';
+
+  const counts = {};
+  projects.forEach(p => counts[p.status] = (counts[p.status] || 0) + 1);
+  document.getElementById('statsBar').innerHTML = Object.entries(counts)
+    .map(([s, n]) => `<div class="stat-chip"><strong>${n}</strong> ${s}</div>`).join('');
+
+  const el = document.getElementById('list');
+  if (list.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><p>沒有符合的專案</p></div>`;
+    return;
+  }
+  el.innerHTML = list.map(p => `
+    <div class="card" onclick="openSheet('${p.id}')">
+      <div class="card-top">
+        <div>
+          <div class="card-id">${esc(p.code)}</div>
+          <div class="card-name">${esc(p.name) || '（未命名）'}</div>
+        </div>
+        <span class="badge st-${p.status}">${p.status}</span>
+      </div>
+      <div class="card-meta">
+        ${p.date ? `<span class="date-label">📅 ${p.date}</span>` : ''}
+        ${p.ship ? `<span class="ship-badge">${p.ship}</span>` : ''}
+      </div>
+      ${p.note ? `<div class="card-note">💬 ${esc(p.note)}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function openSheet(id) {
+  editId = id;
+  const p = id ? projects.find(x => x.id === id) : null;
+  document.getElementById('sheetTitle').textContent = p ? '編輯專案' : '新增專案';
+  document.getElementById('fId').value = p ? p.code : '';
+  document.getElementById('fName').value = p ? p.name : '';
+  document.getElementById('fDate').value = p ? p.date : '';
+  document.getElementById('fStatus').value = p ? p.status : '未開始';
+  document.getElementById('fShip').value = p ? p.ship : '';
+  document.getElementById('fNote').value = p ? p.note : '';
+  document.getElementById('delBtn').style.display = p ? 'flex' : 'none';
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSheet() {
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeOnBg(e) { if (e.target === document.getElementById('overlay')) closeSheet(); }
+
+function save() {
+  const code = document.getElementById('fId').value.trim();
+  const name = document.getElementById('fName').value.trim();
+  if (!code && !name) { alert('請輸入專案代號或名稱'); return; }
+  const data = {
+    code, name,
+    date: document.getElementById('fDate').value,
+    status: document.getElementById('fStatus').value,
+    ship: document.getElementById('fShip').value,
+    note: document.getElementById('fNote').value.trim(),
+  };
+  if (editId) {
+    const i = projects.findIndex(x => x.id === editId);
+    projects[i] = { ...projects[i], ...data };
+  } else {
+    projects.unshift({ id: crypto.randomUUID(), ...data });
+  }
+  persist();
+  closeSheet();
+  renderList();
+}
+
+function del() {
+  if (!confirm('確定要刪除這個專案嗎？')) return;
+  projects = projects.filter(x => x.id !== editId);
+  persist();
+  closeSheet();
+  renderList();
+}
+
+renderList();
+</script>
+</body>
+</html>
