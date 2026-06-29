@@ -17,7 +17,6 @@
     --text-secondary: #6b6860;
     --text-muted: #9e9b94;
     --accent: #2563eb;
-    --accent-bg: #eff6ff;
     --radius: 10px;
     --radius-sm: 6px;
     --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
@@ -25,15 +24,8 @@
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #141412;
-      --surface: #1e1e1b;
-      --border: #2e2e28;
-      --border-strong: #3e3e38;
-      --text: #f0ede8;
-      --text-secondary: #9e9b94;
-      --text-muted: #6b6860;
-      --accent: #3b82f6;
-      --accent-bg: #1e3a5f;
+      --bg: #141412; --surface: #1e1e1b; --border: #2e2e28; --border-strong: #3e3e38;
+      --text: #f0ede8; --text-secondary: #9e9b94; --text-muted: #6b6860; --accent: #3b82f6;
     }
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -57,30 +49,50 @@
   .filter-btn { flex-shrink: 0; padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; font-size: 13px; color: var(--text-secondary); cursor: pointer; white-space: nowrap; font-weight: 500; transition: all 0.15s; }
   .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-  .list { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+  /* 出口工具列 */
+  .export-bar { display: none; align-items: center; justify-content: space-between; padding: 10px 16px; background: #eff6ff; border-bottom: 1px solid #bfdbfe; }
+  .export-bar.show { display: flex; }
+  .export-bar span { font-size: 14px; color: #1e4faa; font-weight: 500; }
+  .btn-export { background: #2563eb; color: #fff; border: none; border-radius: var(--radius-sm); padding: 8px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-export:active { opacity: 0.85; }
+
+  .stats { display: flex; gap: 8px; padding: 10px 16px 2px; overflow-x: auto; scrollbar-width: none; }
+  .stats::-webkit-scrollbar { display: none; }
+  .stat-chip { flex-shrink: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+  .stat-chip strong { color: var(--text); font-weight: 600; }
+
+  .list { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 100px; }
 
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); cursor: pointer; transition: box-shadow 0.15s; }
   .card:active { box-shadow: none; opacity: 0.85; }
-  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .card.selectable { display: flex; align-items: flex-start; gap: 12px; cursor: default; }
+  .card.selectable .card-content { flex: 1; cursor: pointer; }
+  .card.selected { border-color: #3b82f6; background: #f0f6ff; }
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
   .card-id { font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: 0.3px; }
   .card-name { font-size: 15px; font-weight: 500; margin-top: 2px; line-height: 1.4; }
   .card-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
   .card-note { font-size: 13px; color: var(--text-muted); margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+  /* Checkbox */
+  .check-wrap { padding-top: 2px; flex-shrink: 0; }
+  input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--accent); cursor: pointer; border-radius: 6px; }
+
   .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 12px; font-weight: 600; }
   .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-  .st-未開始 { background: #f1f1ef; color: #5f5e5a; } .st-未開始::before { background: #9e9b94; }
-  .st-已請購 { background: #eff6ff; color: #1e4faa; } .st-已請購::before { background: #3b82f6; }
-  .st-已進貨 { background: #fef9ec; color: #854f0b; } .st-已進貨::before { background: #ef9f27; }
-  .st-已完成 { background: #eaf3de; color: #27500a; } .st-已完成::before { background: #639922; }
-  .st-取消 { background: #fcebeb; color: #791f1f; } .st-取消::before { background: #e24b4a; }
+  .st-未開始  { background: #f1f1ef; color: #5f5e5a; } .st-未開始::before  { background: #9e9b94; }
+  .st-已請購  { background: #eff6ff; color: #1e4faa; } .st-已請購::before  { background: #3b82f6; }
+  .st-進貨中  { background: #fef3c7; color: #92400e; } .st-進貨中::before  { background: #f59e0b; }
+  .st-已進貨  { background: #faeeda; color: #633806; } .st-已進貨::before  { background: #ef9f27; }
+  .st-已完成  { background: #eaf3de; color: #27500a; } .st-已完成::before  { background: #639922; }
+  .st-取消    { background: #fcebeb; color: #791f1f; } .st-取消::before    { background: #e24b4a; }
+
   .ship-badge { background: var(--bg); border: 1px solid var(--border); color: var(--text-secondary); padding: 3px 9px; border-radius: 20px; font-size: 12px; }
   .date-label { font-size: 12px; color: var(--text-muted); }
 
   .empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
   .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
   .empty p { font-size: 15px; }
-
   .loading { text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 15px; }
 
   .fab { position: fixed; bottom: 28px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 26px; cursor: pointer; box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: center; z-index: 200; transition: transform 0.15s; }
@@ -102,16 +114,16 @@
   .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); background: var(--surface); }
   .field textarea { height: 80px; padding: 10px 14px; resize: none; line-height: 1.5; }
 
+  /* 全部進貨 toggle */
+  .toggle-field { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; }
+  .toggle-field label { font-size: 15px; color: var(--text); cursor: pointer; }
+  .toggle-field input[type=checkbox] { width: 24px; height: 24px; accent-color: var(--accent); cursor: pointer; }
+
   .sheet-actions { display: flex; gap: 10px; padding: 0 20px 16px; }
   .btn-save { flex: 1; height: 48px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-size: 16px; font-weight: 600; cursor: pointer; }
   .btn-save:active { opacity: 0.85; }
   .btn-del { height: 48px; width: 48px; background: #fcebeb; color: #a32d2d; border: none; border-radius: var(--radius); font-size: 20px; cursor: pointer; flex-shrink: 0; display: none; align-items: center; justify-content: center; }
   .btn-del:active { opacity: 0.75; }
-
-  .stats { display: flex; gap: 8px; padding: 10px 16px 2px; overflow-x: auto; scrollbar-width: none; }
-  .stats::-webkit-scrollbar { display: none; }
-  .stat-chip { flex-shrink: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
-  .stat-chip strong { color: var(--text); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -131,9 +143,15 @@
   <button class="filter-btn active" onclick="setFilter('')" data-filter="">全部</button>
   <button class="filter-btn" onclick="setFilter('未開始')" data-filter="未開始">未開始</button>
   <button class="filter-btn" onclick="setFilter('已請購')" data-filter="已請購">已請購</button>
+  <button class="filter-btn" onclick="setFilter('進貨中')" data-filter="進貨中">進貨中</button>
   <button class="filter-btn" onclick="setFilter('已進貨')" data-filter="已進貨">已進貨</button>
   <button class="filter-btn" onclick="setFilter('已完成')" data-filter="已完成">已完成</button>
   <button class="filter-btn" onclick="setFilter('取消')" data-filter="取消">取消</button>
+</div>
+
+<div class="export-bar" id="exportBar">
+  <span id="exportCount">已選 0 筆</span>
+  <button class="btn-export" onclick="batchExport()">出口 → 已完成</button>
 </div>
 
 <div class="stats" id="statsBar"></div>
@@ -155,7 +173,7 @@
       <div class="field">
         <label>狀態</label>
         <select id="fStatus">
-          <option>未開始</option><option>已請購</option><option>已進貨</option><option>已完成</option><option>取消</option>
+          <option>未開始</option><option>已請購</option><option>進貨中</option><option>已進貨</option><option>已完成</option><option>取消</option>
         </select>
       </div>
       <div class="field">
@@ -165,6 +183,10 @@
         </select>
       </div>
       <div class="field"><label>備註</label><textarea id="fNote" placeholder="輸入備註…"></textarea></div>
+      <div class="toggle-field" onclick="toggleAllReceived()">
+        <label>✅ 全部進貨（自動設為已進貨）</label>
+        <input type="checkbox" id="fAllReceived" onclick="event.stopPropagation();" onchange="onAllReceivedChange()">
+      </div>
     </div>
     <div class="sheet-actions">
       <button class="btn-save" onclick="save()">儲存</button>
@@ -193,33 +215,49 @@ const col = collection(db, "projects");
 let projects = [];
 let editId = null;
 let activeFilter = '';
+let selectedIds = new Set();
 
 const syncEl = document.getElementById('syncStatus');
 
-const q = query(col, orderBy("createdAt", "desc"));
+// 依訂單日期舊到新排序，沒有日期的排最後
+function sortProjects(list) {
+  return [...list].sort((a, b) => {
+    if (!a.date && !b.date) return 0;
+    if (!a.date) return 1;
+    if (!b.date) return -1;
+    return a.date.localeCompare(b.date);
+  });
+}
+
+const q = query(col, orderBy("createdAt", "asc"));
 onSnapshot(q, (snap) => {
   projects = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
   syncEl.textContent = '已同步';
   syncEl.className = 'sync-status sync-ok';
+  // 清除已不存在的選取
+  selectedIds = new Set([...selectedIds].filter(id => projects.find(p => p._id === id)));
   renderList();
-}, (err) => {
+}, () => {
   syncEl.textContent = '離線';
   syncEl.className = 'sync-status sync-err';
 });
 
 window.setFilter = function(f) {
   activeFilter = f;
+  selectedIds.clear();
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === f));
+  updateExportBar();
   renderList();
 };
 
 function renderList() {
   const q = document.getElementById('searchInput').value.toLowerCase();
-  const list = projects.filter(p => {
+  let list = projects.filter(p => {
     const matchQ = !q || ((p.code||'') + (p.name||'') + (p.note||'')).toLowerCase().includes(q);
     const matchF = !activeFilter || p.status === activeFilter;
     return matchQ && matchF;
   });
+  list = sortProjects(list);
 
   const counts = {};
   projects.forEach(p => counts[p.status] = (counts[p.status]||0)+1);
@@ -231,25 +269,94 @@ function renderList() {
     el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><p>沒有符合的專案</p></div>`;
     return;
   }
-  el.innerHTML = list.map(p => `
-    <div class="card" onclick="openSheet('${p._id}')">
-      <div class="card-top">
-        <div>
-          <div class="card-id">${esc(p.code)}</div>
-          <div class="card-name">${esc(p.name)||'（未命名）'}</div>
-        </div>
-        <span class="badge st-${p.status}">${p.status}</span>
-      </div>
-      <div class="card-meta">
-        ${p.date ? `<span class="date-label">📅 ${p.date}</span>` : ''}
-        ${p.ship ? `<span class="ship-badge">${p.ship}</span>` : ''}
-      </div>
-      ${p.note ? `<div class="card-note">💬 ${esc(p.note)}</div>` : ''}
-    </div>
-  `).join('');
+
+  const isInvoiced = activeFilter === '已進貨';
+
+  el.innerHTML = list.map(p => {
+    const checked = selectedIds.has(p._id);
+    if (isInvoiced) {
+      return `
+        <div class="card selectable${checked ? ' selected' : ''}">
+          <div class="check-wrap">
+            <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleSelect('${p._id}', this.checked)">
+          </div>
+          <div class="card-content" onclick="openSheet('${p._id}')">
+            <div class="card-top">
+              <div>
+                <div class="card-id">${esc(p.code)}</div>
+                <div class="card-name">${esc(p.name)||'（未命名）'}</div>
+              </div>
+              <span class="badge st-${p.status}">${p.status}</span>
+            </div>
+            <div class="card-meta">
+              ${p.date ? `<span class="date-label">📅 ${p.date}</span>` : ''}
+              ${p.ship ? `<span class="ship-badge">${p.ship}</span>` : ''}
+            </div>
+            ${p.note ? `<div class="card-note">💬 ${esc(p.note)}</div>` : ''}
+          </div>
+        </div>`;
+    } else {
+      return `
+        <div class="card" onclick="openSheet('${p._id}')">
+          <div class="card-top">
+            <div>
+              <div class="card-id">${esc(p.code)}</div>
+              <div class="card-name">${esc(p.name)||'（未命名）'}</div>
+            </div>
+            <span class="badge st-${p.status}">${p.status}</span>
+          </div>
+          <div class="card-meta">
+            ${p.date ? `<span class="date-label">📅 ${p.date}</span>` : ''}
+            ${p.ship ? `<span class="ship-badge">${p.ship}</span>` : ''}
+          </div>
+          ${p.note ? `<div class="card-note">💬 ${esc(p.note)}</div>` : ''}
+        </div>`;
+    }
+  }).join('');
 }
 
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+window.toggleSelect = function(id, checked) {
+  if (checked) selectedIds.add(id);
+  else selectedIds.delete(id);
+  updateExportBar();
+  // 更新卡片樣式
+  const cards = document.querySelectorAll('.card.selectable');
+  cards.forEach(c => {
+    const cb = c.querySelector('input[type=checkbox]');
+    if (cb && selectedIds.has(id) && c.querySelector(`input[onchange*="${id}"]`)) {
+      c.classList.toggle('selected', checked);
+    }
+  });
+  renderList();
+};
+
+function updateExportBar() {
+  const bar = document.getElementById('exportBar');
+  const count = selectedIds.size;
+  if (activeFilter === '已進貨' && count > 0) {
+    bar.classList.add('show');
+    document.getElementById('exportCount').textContent = `已選 ${count} 筆`;
+  } else {
+    bar.classList.remove('show');
+  }
+}
+
+window.batchExport = async function() {
+  if (selectedIds.size === 0) return;
+  if (!confirm(`確定將 ${selectedIds.size} 筆資料標記為已完成？`)) return;
+  syncEl.textContent = '更新中…';
+  syncEl.className = 'sync-status sync-ing';
+  try {
+    const promises = [...selectedIds].map(id => updateDoc(doc(db, "projects", id), { status: '已完成' }));
+    await Promise.all(promises);
+    selectedIds.clear();
+    updateExportBar();
+  } catch(e) {
+    alert('更新失敗，請檢查網路連線');
+  }
+};
 
 window.openSheet = function(id) {
   editId = id;
@@ -261,9 +368,23 @@ window.openSheet = function(id) {
   document.getElementById('fStatus').value = p ? p.status : '未開始';
   document.getElementById('fShip').value = p ? p.ship||'' : '';
   document.getElementById('fNote').value = p ? p.note||'' : '';
+  document.getElementById('fAllReceived').checked = false;
   document.getElementById('delBtn').style.display = p ? 'flex' : 'none';
   document.getElementById('overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+};
+
+window.toggleAllReceived = function() {
+  const cb = document.getElementById('fAllReceived');
+  cb.checked = !cb.checked;
+  onAllReceivedChange();
+};
+
+window.onAllReceivedChange = function() {
+  const cb = document.getElementById('fAllReceived');
+  if (cb.checked) {
+    document.getElementById('fStatus').value = '已進貨';
+  }
 };
 
 window.closeSheet = function() {
