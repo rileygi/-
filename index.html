@@ -9,16 +9,9 @@
 <title>專案追蹤</title>
 <style>
   :root {
-    --bg: #f5f5f0;
-    --surface: #ffffff;
-    --border: #e0ddd6;
-    --border-strong: #c8c4bb;
-    --text: #1a1a18;
-    --text-secondary: #6b6860;
-    --text-muted: #9e9b94;
-    --accent: #2563eb;
-    --radius: 10px;
-    --radius-sm: 6px;
+    --bg: #f5f5f0; --surface: #ffffff; --border: #e0ddd6; --border-strong: #c8c4bb;
+    --text: #1a1a18; --text-secondary: #6b6860; --text-muted: #9e9b94;
+    --accent: #2563eb; --radius: 10px; --radius-sm: 6px;
     --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
     --shadow-md: 0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06);
   }
@@ -49,12 +42,16 @@
   .filter-btn { flex-shrink: 0; padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; font-size: 13px; color: var(--text-secondary); cursor: pointer; white-space: nowrap; font-weight: 500; transition: all 0.15s; }
   .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-  /* 出口工具列 */
-  .export-bar { display: none; align-items: center; justify-content: space-between; padding: 10px 16px; background: #eff6ff; border-bottom: 1px solid #bfdbfe; }
-  .export-bar.show { display: flex; }
-  .export-bar span { font-size: 14px; color: #1e4faa; font-weight: 500; }
-  .btn-export { background: #2563eb; color: #fff; border: none; border-radius: var(--radius-sm); padding: 8px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
-  .btn-export:active { opacity: 0.85; }
+  .action-bar { display: none; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid; }
+  .action-bar.show { display: flex; }
+  .action-bar.mode-transit { background: #fef3c7; border-color: #fcd34d; }
+  .action-bar.mode-transit span { color: #92400e; font-size: 14px; font-weight: 500; }
+  .action-bar.mode-transit .btn-action { background: #f59e0b; color: #fff; }
+  .action-bar.mode-export { background: #eff6ff; border-color: #bfdbfe; }
+  .action-bar.mode-export span { color: #1e4faa; font-size: 14px; font-weight: 500; }
+  .action-bar.mode-export .btn-action { background: #2563eb; color: #fff; }
+  .btn-action { border: none; border-radius: var(--radius-sm); padding: 8px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-action:active { opacity: 0.85; }
 
   .stats { display: flex; gap: 8px; padding: 10px 16px 2px; overflow-x: auto; scrollbar-width: none; }
   .stats::-webkit-scrollbar { display: none; }
@@ -68,24 +65,24 @@
   .card.selectable { display: flex; align-items: flex-start; gap: 12px; cursor: default; }
   .card.selectable .card-content { flex: 1; cursor: pointer; }
   .card.selected { border-color: #3b82f6; background: #f0f6ff; }
+  @media (prefers-color-scheme: dark) { .card.selected { background: #1e3a5f; } }
   .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
   .card-id { font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: 0.3px; }
   .card-name { font-size: 15px; font-weight: 500; margin-top: 2px; line-height: 1.4; }
   .card-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
   .card-note { font-size: 13px; color: var(--text-muted); margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  /* Checkbox */
   .check-wrap { padding-top: 2px; flex-shrink: 0; }
-  input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--accent); cursor: pointer; border-radius: 6px; }
+  input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--accent); cursor: pointer; }
 
   .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 12px; font-weight: 600; }
   .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-  .st-未開始  { background: #f1f1ef; color: #5f5e5a; } .st-未開始::before  { background: #9e9b94; }
-  .st-已請購  { background: #eff6ff; color: #1e4faa; } .st-已請購::before  { background: #3b82f6; }
-  .st-進貨中  { background: #fef3c7; color: #92400e; } .st-進貨中::before  { background: #f59e0b; }
-  .st-已進貨  { background: #faeeda; color: #633806; } .st-已進貨::before  { background: #ef9f27; }
-  .st-已完成  { background: #eaf3de; color: #27500a; } .st-已完成::before  { background: #639922; }
-  .st-取消    { background: #fcebeb; color: #791f1f; } .st-取消::before    { background: #e24b4a; }
+  .st-未開始 { background: #f1f1ef; color: #5f5e5a; } .st-未開始::before { background: #9e9b94; }
+  .st-已請購 { background: #eff6ff; color: #1e4faa; } .st-已請購::before { background: #3b82f6; }
+  .st-進貨中 { background: #fef3c7; color: #92400e; } .st-進貨中::before { background: #f59e0b; }
+  .st-已進貨 { background: #faeeda; color: #633806; } .st-已進貨::before { background: #ef9f27; }
+  .st-已完成 { background: #eaf3de; color: #27500a; } .st-已完成::before { background: #639922; }
+  .st-取消   { background: #fcebeb; color: #791f1f; } .st-取消::before   { background: #e24b4a; }
 
   .ship-badge { background: var(--bg); border: 1px solid var(--border); color: var(--text-secondary); padding: 3px 9px; border-radius: 20px; font-size: 12px; }
   .date-label { font-size: 12px; color: var(--text-muted); }
@@ -107,18 +104,11 @@
   .sheet-title { font-size: 17px; font-weight: 600; }
   .sheet-close { background: var(--bg); border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 18px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .sheet-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-
   .field { display: flex; flex-direction: column; gap: 6px; }
   .field label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
   .field input, .field select, .field textarea { height: 44px; padding: 0 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-size: 15px; outline: none; font-family: inherit; width: 100%; transition: border-color 0.15s; }
   .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); background: var(--surface); }
   .field textarea { height: 80px; padding: 10px 14px; resize: none; line-height: 1.5; }
-
-  /* 全部進貨 toggle */
-  .toggle-field { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; }
-  .toggle-field label { font-size: 15px; color: var(--text); cursor: pointer; }
-  .toggle-field input[type=checkbox] { width: 24px; height: 24px; accent-color: var(--accent); cursor: pointer; }
-
   .sheet-actions { display: flex; gap: 10px; padding: 0 20px 16px; }
   .btn-save { flex: 1; height: 48px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-size: 16px; font-weight: 600; cursor: pointer; }
   .btn-save:active { opacity: 0.85; }
@@ -149,9 +139,16 @@
   <button class="filter-btn" onclick="setFilter('取消')" data-filter="取消">取消</button>
 </div>
 
-<div class="export-bar" id="exportBar">
+<!-- 進貨中：全部進貨 -->
+<div class="action-bar mode-transit" id="transitBar">
+  <span id="transitCount">已選 0 筆</span>
+  <button class="btn-action" onclick="batchTransit()">全部進貨 → 已進貨</button>
+</div>
+
+<!-- 已進貨：出口 -->
+<div class="action-bar mode-export" id="exportBar">
   <span id="exportCount">已選 0 筆</span>
-  <button class="btn-export" onclick="batchExport()">出口 → 已完成</button>
+  <button class="btn-action" onclick="batchExport()">出口 → 已完成</button>
 </div>
 
 <div class="stats" id="statsBar"></div>
@@ -183,10 +180,6 @@
         </select>
       </div>
       <div class="field"><label>備註</label><textarea id="fNote" placeholder="輸入備註…"></textarea></div>
-      <div class="toggle-field" onclick="toggleAllReceived()">
-        <label>✅ 全部進貨（自動設為已進貨）</label>
-        <input type="checkbox" id="fAllReceived" onclick="event.stopPropagation();" onchange="onAllReceivedChange()">
-      </div>
     </div>
     <div class="sheet-actions">
       <button class="btn-save" onclick="save()">儲存</button>
@@ -219,7 +212,6 @@ let selectedIds = new Set();
 
 const syncEl = document.getElementById('syncStatus');
 
-// 依訂單日期舊到新排序，沒有日期的排最後
 function sortProjects(list) {
   return [...list].sort((a, b) => {
     if (!a.date && !b.date) return 0;
@@ -234,8 +226,8 @@ onSnapshot(q, (snap) => {
   projects = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
   syncEl.textContent = '已同步';
   syncEl.className = 'sync-status sync-ok';
-  // 清除已不存在的選取
   selectedIds = new Set([...selectedIds].filter(id => projects.find(p => p._id === id)));
+  updateActionBars();
   renderList();
 }, () => {
   syncEl.textContent = '離線';
@@ -246,9 +238,31 @@ window.setFilter = function(f) {
   activeFilter = f;
   selectedIds.clear();
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === f));
-  updateExportBar();
+  updateActionBars();
   renderList();
 };
+
+function updateActionBars() {
+  const transitBar = document.getElementById('transitBar');
+  const exportBar = document.getElementById('exportBar');
+  const count = selectedIds.size;
+
+  transitBar.classList.remove('show');
+  exportBar.classList.remove('show');
+
+  if (activeFilter === '進貨中' && count > 0) {
+    transitBar.classList.add('show');
+    document.getElementById('transitCount').textContent = `已選 ${count} 筆`;
+  }
+  if (activeFilter === '已進貨' && count > 0) {
+    exportBar.classList.add('show');
+    document.getElementById('exportCount').textContent = `已選 ${count} 筆`;
+  }
+}
+
+function isSelectable(filter) {
+  return filter === '進貨中' || filter === '已進貨';
+}
 
 function renderList() {
   const q = document.getElementById('searchInput').value.toLowerCase();
@@ -270,47 +284,35 @@ function renderList() {
     return;
   }
 
-  const isInvoiced = activeFilter === '已進貨';
+  const selectable = isSelectable(activeFilter);
 
   el.innerHTML = list.map(p => {
     const checked = selectedIds.has(p._id);
-    if (isInvoiced) {
+    const cardInner = `
+      <div class="card-top">
+        <div>
+          <div class="card-id">${esc(p.code)}</div>
+          <div class="card-name">${esc(p.name)||'（未命名）'}</div>
+        </div>
+        <span class="badge st-${p.status}">${p.status}</span>
+      </div>
+      <div class="card-meta">
+        ${p.date ? `<span class="date-label">📅 ${p.date}</span>` : ''}
+        ${p.ship ? `<span class="ship-badge">${p.ship}</span>` : ''}
+      </div>
+      ${p.note ? `<div class="card-note">💬 ${esc(p.note)}</div>` : ''}
+    `;
+
+    if (selectable) {
       return `
         <div class="card selectable${checked ? ' selected' : ''}">
           <div class="check-wrap">
             <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleSelect('${p._id}', this.checked)">
           </div>
-          <div class="card-content" onclick="openSheet('${p._id}')">
-            <div class="card-top">
-              <div>
-                <div class="card-id">${esc(p.code)}</div>
-                <div class="card-name">${esc(p.name)||'（未命名）'}</div>
-              </div>
-              <span class="badge st-${p.status}">${p.status}</span>
-            </div>
-            <div class="card-meta">
-              ${p.date ? `<span class="date-label">📅 ${p.date}</span>` : ''}
-              ${p.ship ? `<span class="ship-badge">${p.ship}</span>` : ''}
-            </div>
-            ${p.note ? `<div class="card-note">💬 ${esc(p.note)}</div>` : ''}
-          </div>
+          <div class="card-content" onclick="openSheet('${p._id}')">${cardInner}</div>
         </div>`;
     } else {
-      return `
-        <div class="card" onclick="openSheet('${p._id}')">
-          <div class="card-top">
-            <div>
-              <div class="card-id">${esc(p.code)}</div>
-              <div class="card-name">${esc(p.name)||'（未命名）'}</div>
-            </div>
-            <span class="badge st-${p.status}">${p.status}</span>
-          </div>
-          <div class="card-meta">
-            ${p.date ? `<span class="date-label">📅 ${p.date}</span>` : ''}
-            ${p.ship ? `<span class="ship-badge">${p.ship}</span>` : ''}
-          </div>
-          ${p.note ? `<div class="card-note">💬 ${esc(p.note)}</div>` : ''}
-        </div>`;
+      return `<div class="card" onclick="openSheet('${p._id}')">${cardInner}</div>`;
     }
   }).join('');
 }
@@ -320,43 +322,27 @@ function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 window.toggleSelect = function(id, checked) {
   if (checked) selectedIds.add(id);
   else selectedIds.delete(id);
-  updateExportBar();
-  // 更新卡片樣式
-  const cards = document.querySelectorAll('.card.selectable');
-  cards.forEach(c => {
-    const cb = c.querySelector('input[type=checkbox]');
-    if (cb && selectedIds.has(id) && c.querySelector(`input[onchange*="${id}"]`)) {
-      c.classList.toggle('selected', checked);
-    }
-  });
+  updateActionBars();
   renderList();
 };
 
-function updateExportBar() {
-  const bar = document.getElementById('exportBar');
-  const count = selectedIds.size;
-  if (activeFilter === '已進貨' && count > 0) {
-    bar.classList.add('show');
-    document.getElementById('exportCount').textContent = `已選 ${count} 筆`;
-  } else {
-    bar.classList.remove('show');
-  }
-}
-
-window.batchExport = async function() {
+async function batchUpdate(targetStatus) {
   if (selectedIds.size === 0) return;
-  if (!confirm(`確定將 ${selectedIds.size} 筆資料標記為已完成？`)) return;
+  const label = targetStatus === '已進貨' ? '已進貨' : '已完成';
+  if (!confirm(`確定將 ${selectedIds.size} 筆資料標記為${label}？`)) return;
   syncEl.textContent = '更新中…';
   syncEl.className = 'sync-status sync-ing';
   try {
-    const promises = [...selectedIds].map(id => updateDoc(doc(db, "projects", id), { status: '已完成' }));
-    await Promise.all(promises);
+    await Promise.all([...selectedIds].map(id => updateDoc(doc(db, "projects", id), { status: targetStatus })));
     selectedIds.clear();
-    updateExportBar();
+    updateActionBars();
   } catch(e) {
     alert('更新失敗，請檢查網路連線');
   }
-};
+}
+
+window.batchTransit = () => batchUpdate('已進貨');
+window.batchExport = () => batchUpdate('已完成');
 
 window.openSheet = function(id) {
   editId = id;
@@ -368,23 +354,9 @@ window.openSheet = function(id) {
   document.getElementById('fStatus').value = p ? p.status : '未開始';
   document.getElementById('fShip').value = p ? p.ship||'' : '';
   document.getElementById('fNote').value = p ? p.note||'' : '';
-  document.getElementById('fAllReceived').checked = false;
   document.getElementById('delBtn').style.display = p ? 'flex' : 'none';
   document.getElementById('overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
-};
-
-window.toggleAllReceived = function() {
-  const cb = document.getElementById('fAllReceived');
-  cb.checked = !cb.checked;
-  onAllReceivedChange();
-};
-
-window.onAllReceivedChange = function() {
-  const cb = document.getElementById('fAllReceived');
-  if (cb.checked) {
-    document.getElementById('fStatus').value = '已進貨';
-  }
 };
 
 window.closeSheet = function() {
