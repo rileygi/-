@@ -157,9 +157,9 @@
   <div class="sort-group-label">運輸方式</div>
   <button class="sort-option" onclick="setSort('ship','custom')" data-sort="ship-custom">空運 → 海運 → 其他</button>
   <div class="sort-divider"></div>
-  <div class="sort-group-label">名稱</div>
-  <button class="sort-option" onclick="setSort('name','asc')" data-sort="name-asc">A → Z</button>
-  <button class="sort-option" onclick="setSort('name','desc')" data-sort="name-desc">Z → A</button>
+  <div class="sort-group-label">專案代號</div>
+  <button class="sort-option" onclick="setSort('code','asc')" data-sort="code-asc">A → Z</button>
+  <button class="sort-option" onclick="setSort('code','desc')" data-sort="code-desc">Z → A</button>
 </div>
 
 <div class="filter-bar">
@@ -251,8 +251,8 @@ const sortLabels = {
   'date-asc': '訂單日期 舊→新',
   'date-desc': '訂單日期 新→舊',
   'ship-custom': '運輸方式',
-  'name-asc': '名稱 A→Z',
-  'name-desc': '名稱 Z→A',
+  'code-asc': '專案代號 A→Z',
+  'code-desc': '專案代號 Z→A',
 };
 
 function sortProjects(list) {
@@ -276,9 +276,9 @@ function sortProjects(list) {
       bv = SHIP_ORDER[b.ship] ?? 3;
       return av - bv;
     }
-    if (sortField === 'name') {
-      av = (a.name || '').toLowerCase();
-      bv = (b.name || '').toLowerCase();
+    if (sortField === 'code') {
+      av = (a.code || '').toLowerCase();
+      bv = (b.code || '').toLowerCase();
       const r = av.localeCompare(bv, 'zh-TW');
       return sortDir === 'asc' ? r : -r;
     }
