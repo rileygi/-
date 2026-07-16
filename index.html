@@ -58,12 +58,20 @@
 
   .action-bar { display: none; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid; }
   .action-bar.show { display: flex; }
+  .action-bar.mode-notstarted { background: #f1f1ef; border-color: #d4d2cc; }
+  .action-bar.mode-notstarted span { color: #5f5e5a; font-size: 14px; font-weight: 500; }
+  .action-bar.mode-notstarted .btn-action { background: #3b82f6; color: #fff; }
+  .action-bar.mode-ordered { background: #eff6ff; border-color: #bfdbfe; }
+  .action-bar.mode-ordered span { color: #1e4faa; font-size: 14px; font-weight: 500; }
+  .action-bar.mode-ordered .btn-action { background: #f59e0b; color: #fff; }
+  .action-bar.mode-ordered .btn-action2 { background: #ef9f27; color: #fff; }
   .action-bar.mode-transit { background: #fef3c7; border-color: #fcd34d; }
   .action-bar.mode-transit span { color: #92400e; font-size: 14px; font-weight: 500; }
   .action-bar.mode-transit .btn-action { background: #f59e0b; color: #fff; }
   .action-bar.mode-export { background: #eff6ff; border-color: #bfdbfe; }
   .action-bar.mode-export span { color: #1e4faa; font-size: 14px; font-weight: 500; }
   .action-bar.mode-export .btn-action { background: #2563eb; color: #fff; }
+  .action-bar .btn-group { display: flex; gap: 8px; }
   .btn-action { border: none; border-radius: var(--radius-sm); padding: 8px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
   .btn-action:active { opacity: 0.85; }
 
@@ -172,13 +180,24 @@
   <button class="filter-btn" onclick="setFilter('取消')" data-filter="取消">取消</button>
 </div>
 
+<div class="action-bar mode-notstarted" id="notStartedBar">
+  <span id="notStartedCount">已選 0 筆</span>
+  <button class="btn-action" onclick="batchUpdate('已請購')">→ 已請購</button>
+</div>
+<div class="action-bar mode-ordered" id="orderedBar">
+  <span id="orderedCount">已選 0 筆</span>
+  <div class="btn-group">
+    <button class="btn-action" onclick="batchUpdate('進貨中')">→ 進貨中</button>
+    <button class="btn-action" onclick="batchUpdate('已進貨')">→ 已進貨</button>
+  </div>
+</div>
 <div class="action-bar mode-transit" id="transitBar">
   <span id="transitCount">已選 0 筆</span>
-  <button class="btn-action" onclick="batchTransit()">全部進貨 → 已進貨</button>
+  <button class="btn-action" onclick="batchUpdate('已進貨')">全部進貨 → 已進貨</button>
 </div>
 <div class="action-bar mode-export" id="exportBar">
   <span id="exportCount">已選 0 筆</span>
-  <button class="btn-action" onclick="batchExport()">出口 → 已完成</button>
+  <button class="btn-action" onclick="batchUpdate('已完成')">出口 → 已完成</button>
 </div>
 
 <div class="stats" id="statsBar"></div>
@@ -331,17 +350,22 @@ window.setFilter = function(f) {
 
 function updateActionBars() {
   const count = selectedIds.size;
-  const tBar = document.getElementById('transitBar');
-  const eBar = document.getElementById('exportBar');
-  tBar.classList.toggle('show', activeFilter === '進貨中' && count > 0);
-  eBar.classList.toggle('show', activeFilter === '已進貨' && count > 0);
+  document.getElementById('notStartedBar').classList.toggle('show', activeFilter === '未開始' && count > 0);
+  document.getElementById('orderedBar').classList.toggle('show', activeFilter === '已請購' && count > 0);
+  document.getElementById('transitBar').classList.toggle('show', activeFilter === '進貨中' && count > 0);
+  document.getElementById('exportBar').classList.toggle('show', activeFilter === '已進貨' && count > 0);
   if (count > 0) {
-    document.getElementById('transitCount').textContent = `已選 ${count} 筆`;
-    document.getElementById('exportCount').textContent = `已選 ${count} 筆`;
+    const label = `已選 ${count} 筆`;
+    document.getElementById('notStartedCount').textContent = label;
+    document.getElementById('orderedCount').textContent = label;
+    document.getElementById('transitCount').textContent = label;
+    document.getElementById('exportCount').textContent = label;
   }
 }
 
-function isSelectable(filter) { return filter === '進貨中' || filter === '已進貨'; }
+function isSelectable(filter) {
+  return ['未開始','已請購','進貨中','已進貨'].includes(filter);
+}
 
 function renderList() {
   const q = document.getElementById('searchInput').value.toLowerCase();
@@ -398,17 +422,15 @@ window.toggleSelect = function(id, checked) {
   renderList();
 };
 
-async function batchUpdate(status) {
+window.batchUpdate = async function(status) {
   if (!selectedIds.size) return;
-  if (!confirm(`確定將 ${selectedIds.size} 筆資料標記為${status}？`)) return;
+  if (!confirm(`確定將 ${selectedIds.size} 筆資料標記為「${status}」？`)) return;
   syncEl.textContent = '更新中…'; syncEl.className = 'sync-status sync-ing';
   try {
     await Promise.all([...selectedIds].map(id => updateDoc(doc(db,"projects",id), {status})));
     selectedIds.clear(); updateActionBars();
   } catch { alert('更新失敗，請檢查網路連線'); }
-}
-window.batchTransit = () => batchUpdate('已進貨');
-window.batchExport  = () => batchUpdate('已完成');
+};
 
 window.openSheet = function(id) {
   editId = id;
