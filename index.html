@@ -104,6 +104,13 @@
   .st-已完成 { background: #eaf3de; color: #27500a; } .st-已完成::before { background: #639922; }
   .st-取消   { background: #fcebeb; color: #791f1f; } .st-取消::before   { background: #e24b4a; }
   .ship-badge { background: var(--bg); border: 1px solid var(--border); color: var(--text-secondary); padding: 3px 9px; border-radius: 20px; font-size: 12px; }
+  .partial-badge { background: #fdf4ff; border: 1px solid #e9d5ff; color: #7e22ce; padding: 3px 9px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+  .partial-note { font-size: 13px; color: #7e22ce; margin-top: 6px; }
+  .toggle-field { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; }
+  .toggle-field label { font-size: 15px; color: var(--text); cursor: pointer; }
+  .toggle-field input[type=checkbox] { width: 24px; height: 24px; accent-color: var(--accent); cursor: pointer; }
+  .partial-input-wrap { display: none; }
+  .partial-input-wrap.show { display: flex; flex-direction: column; gap: 6px; }
   .date-label { font-size: 12px; color: var(--text-muted); }
 
   .empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
@@ -229,6 +236,13 @@
         </select>
       </div>
       <div class="field"><label>備註</label><textarea id="fNote" placeholder="輸入備註…"></textarea></div>
+      <div class="toggle-field" id="partialToggle" style="display:none" onclick="togglePartial()">
+        <label>📦 部份出貨</label>
+        <input type="checkbox" id="fPartial" onclick="event.stopPropagation();" onchange="onPartialChange()">
+      </div>
+      <div class="partial-input-wrap" id="partialInputWrap">
+        <div class="field"><label>出貨數量或說明</label><input id="fPartialNote" placeholder="例：已出 3/10 件"></div>
+      </div>
     </div>
     <div class="sheet-actions">
       <button class="btn-save" onclick="save()">儲存</button>
@@ -401,7 +415,9 @@ function renderList() {
       <div class="card-meta">
         ${p.date ? `<span class="date-label">📅 ${p.date}</span>` : ''}
         ${p.ship ? `<span class="ship-badge">${p.ship}</span>` : ''}
+        ${p.partial ? `<span class="partial-badge">📦 部份出貨</span>` : ''}
       </div>
+      ${p.partial && p.partialNote ? `<div class="partial-note">↳ ${esc(p.partialNote)}</div>` : ''}
       ${p.note ? `<div class="card-note">💬 ${esc(p.note)}</div>` : ''}`;
 
     if (selectable) {
@@ -442,9 +458,35 @@ window.openSheet = function(id) {
   document.getElementById('fStatus').value = p ? p.status : '未開始';
   document.getElementById('fShip').value  = p ? p.ship||'' : '';
   document.getElementById('fNote').value  = p ? p.note||'' : '';
+  // 部份出貨
+  const isTransit = p && p.status === '進貨中';
+  document.getElementById('partialToggle').style.display = isTransit ? 'flex' : 'none';
+  document.getElementById('fPartial').checked = p ? !!p.partial : false;
+  document.getElementById('fPartialNote').value = p ? p.partialNote||'' : '';
+  document.getElementById('partialInputWrap').classList.toggle('show', p ? !!p.partial : false);
+  // 監聽狀態變化以顯示/隱藏部份出貨
+  document.getElementById('fStatus').onchange = function() {
+    const show = this.value === '進貨中';
+    document.getElementById('partialToggle').style.display = show ? 'flex' : 'none';
+    if (!show) {
+      document.getElementById('fPartial').checked = false;
+      document.getElementById('partialInputWrap').classList.remove('show');
+    }
+  };
   document.getElementById('delBtn').style.display = p ? 'flex' : 'none';
   document.getElementById('overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+};
+
+window.togglePartial = function() {
+  const cb = document.getElementById('fPartial');
+  cb.checked = !cb.checked;
+  onPartialChange();
+};
+window.onPartialChange = function() {
+  const checked = document.getElementById('fPartial').checked;
+  document.getElementById('partialInputWrap').classList.toggle('show', checked);
+  if (!checked) document.getElementById('fPartialNote').value = '';
 };
 window.closeSheet = function() {
   document.getElementById('overlay').classList.remove('open');
@@ -457,11 +499,15 @@ window.save = async function() {
   const code = document.getElementById('fId').value.trim();
   const name = document.getElementById('fName').value.trim();
   if (!code && !name) { alert('請輸入專案代號或名稱'); return; }
+  const status = document.getElementById('fStatus').value;
+  const partial = status === '進貨中' ? document.getElementById('fPartial').checked : false;
   const data = { code, name,
     date: document.getElementById('fDate').value,
-    status: document.getElementById('fStatus').value,
+    status,
     ship: document.getElementById('fShip').value,
-    note: document.getElementById('fNote').value.trim() };
+    note: document.getElementById('fNote').value.trim(),
+    partial,
+    partialNote: partial ? document.getElementById('fPartialNote').value.trim() : '' };
   syncEl.textContent = '儲存中…'; syncEl.className = 'sync-status sync-ing';
   try {
     if (editId) await updateDoc(doc(db,"projects",editId), data);
